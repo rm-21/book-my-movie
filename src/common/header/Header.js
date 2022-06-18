@@ -20,6 +20,12 @@ import { makeStyles } from "@material-ui/core/styles";
 import { flexbox } from "@mui/system";
 
 export default function Header() {
+  // States
+  const [loginOpen, setLoginOpen] = useState(false);
+  const [value, setValue] = useState(0);
+  const [login, setLogin] = useState(true);
+  const [success, setSuccess] = useState(false);
+
   // makeStyles gets accesses to the global themes
   const useStyles = makeStyles((theme) => ({
     root: {
@@ -44,6 +50,12 @@ export default function Header() {
       <Link to="/">
         <img src={Logo} alt="logo" className="header-logo" />
       </Link>
+
+      <div className="btn-all">
+        <Button variant="contained" name="Login">
+          Login
+        </Button>
+      </div>
     </div>
   );
 }
