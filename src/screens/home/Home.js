@@ -1,9 +1,23 @@
 import React, { useState, useEffect, Fragment } from "react";
 import Header from "../../common/header/Header";
 import Heading from "../../common/heading/Heading";
+import ImageList from "@material-ui/core/ImageList";
+import ImageListItem from "@material-ui/core/ImageListItem";
+import ImageListItemBar from "@material-ui/core/ImageListItemBar";
+import IconButton from "@material-ui/core/IconButton";
 import axios from "axios";
+import { makeStyles } from "@material-ui/styles";
 
-function Home() {
+const useStyles = makeStyles({
+  grid: {
+    flexWrap: "nowrap",
+    transform: "translateZ(0)",
+  },
+});
+
+const Home = () => {
+  const classes = useStyles();
+
   const [movies, setMovies] = useState([]);
   const [genres, setGenres] = useState([]);
   const [artists, setArtists] = useState([]);
@@ -24,10 +38,26 @@ function Home() {
 
   return (
     <Fragment>
+      {/* Header */}
       <Header bookShow={false} />
+
+      {/* Heading upcoming movies */}
       <Heading />
+
+      {/* Scrollable Images */}
+      <ImageList className={classes.grid} cols={6} rowHeight={250}>
+        {movies.map((tile) => (
+          <ImageListItem key={tile.id}>
+            <img src={tile.poster_url} alt={tile.title} />
+            <ImageListItemBar
+              title={tile.title}
+              actionIcon={<IconButton aria-label={`star ${tile.title}`} />}
+            />
+          </ImageListItem>
+        ))}
+      </ImageList>
     </Fragment>
   );
-}
+};
 
 export default Home;
