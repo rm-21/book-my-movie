@@ -1,0 +1,17 @@
+.second {
+    display: flex;
+    margin: 16px;
+  }
+  
+  .released {
+    width: 76%;
+  }
+  
+  .filter {
+    width: 24%;
+  }
+  
+  .card-component {
+    min-width: 240px;
+    /* max-width: 240px; */
+  }
