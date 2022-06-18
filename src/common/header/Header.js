@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import LoginModal from "./Modal";
 
 import {
   Button,
@@ -13,7 +14,6 @@ import {
 } from "@material-ui/core";
 
 import Logo from "../../assets/logo.svg";
-import Modal from "react-modal";
 import { Link } from "react-router-dom";
 import "./Header.css";
 import { makeStyles } from "@material-ui/core/styles";
@@ -22,6 +22,7 @@ import { flexbox } from "@mui/system";
 export default function Header({ bookShow }) {
   // states
   const [loggedIn, setLoggedIn] = useState(false);
+  const [loginModal, setLoginModal] = useState(false);
 
   // makeStyles gets accesses to the global themes
   const useStyles = makeStyles((theme) => ({
@@ -42,31 +43,40 @@ export default function Header({ bookShow }) {
 
   const classes = useStyles();
 
+  const handleLoginClick = () => {
+    setLoggedIn(true);
+    setLoginModal(true);
+  };
+
+  const handleLogoutClick = () => {
+    setLoggedIn(false);
+  };
+
+  const handleModalSubmit = () => {
+    setLoginModal(false);
+  };
+
   return (
     <div className="header">
-      <Link to="/">
-        <img src={Logo} alt="logo" className="header-logo" />
-      </Link>
+      <div className="rotating-logo">
+        <Link to="/">
+          <img src={Logo} alt="logo" className="header-logo" />
+        </Link>
+      </div>
 
       <div className="btn-all loginOut">
         {loggedIn ? (
-          <Button
-            variant="contained"
-            name="Logout"
-            onClick={() => setLoggedIn(false)}
-          >
+          <Button variant="contained" name="Logout" onClick={handleLogoutClick}>
             Logout
           </Button>
         ) : (
-          <Button
-            variant="contained"
-            name="Login"
-            onClick={() => setLoggedIn(true)}
-          >
+          <Button variant="contained" name="Login" onClick={handleLoginClick}>
             Login
           </Button>
         )}
       </div>
+
+      {loginModal && <LoginModal handleModalSubmit={handleModalSubmit} />}
     </div>
   );
 }
