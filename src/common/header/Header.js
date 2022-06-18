@@ -1,23 +1,13 @@
 import React, { useState } from "react";
 import LoginModal from "./Modal";
 
-import {
-  Button,
-  FormControl,
-  Input,
-  InputLabel,
-  Tab,
-  Tabs,
-  TextField,
-  Typography,
-  createTheme,
-} from "@material-ui/core";
+import { Button } from "@material-ui/core";
 
 import Logo from "../../assets/logo.svg";
 import { Link } from "react-router-dom";
 import "./Header.css";
 
-export default function Header({ bookShow }) {
+export default function Header({ bookShow, bookShowId }) {
   // states
   const [loggedIn, setLoggedIn] = useState(false);
   const [loginModal, setLoginModal] = useState(false);
@@ -55,6 +45,19 @@ export default function Header({ bookShow }) {
         )}
       </div>
 
+      {/* If on released movie page, bookShow=true */}
+      {bookShow ? (
+        <Link
+          to={"/book-show/" + bookShowId}
+          style={{ textDecoration: "none" }}
+        >
+          <Button variant="contained" name="Book Show" color="primary">
+            Book Show
+          </Button>
+        </Link>
+      ) : null}
+
+      {/* Showing login modal */}
       {loginModal && (
         <LoginModal
           handleModalSubmit={handleModalSubmit}
