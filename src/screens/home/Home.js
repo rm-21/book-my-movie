@@ -6,36 +6,77 @@ import ImageListItem from "@material-ui/core/ImageListItem";
 import ImageListItemBar from "@material-ui/core/ImageListItemBar";
 import IconButton from "@material-ui/core/IconButton";
 import axios from "axios";
-import { makeStyles } from "@material-ui/styles";
+import { makeStyles } from "@material-ui/core/styles";
 import ReleasedMovies from "./ReleasedMovies";
 import FilterCard from "./FilterCard";
 import "./Home.css";
-const useStyles = makeStyles({
-  grid: {
-    flexWrap: "nowrap",
-    transform: "translateZ(0)",
-  },
-});
 
 const Home = () => {
+  // Styles
+  const useStyles = makeStyles((theme) => ({
+    grid: {
+      flexWrap: "nowrap",
+      transform: "translateZ(0)",
+    },
+    root: {
+      float: "right",
+      margin: theme.spacing(1, "auto"),
+      minWidth: 240,
+      maxWidth: 240,
+    },
+    title: {
+      color: theme.palette.primary.light,
+    },
+    withMargin: {
+      marginBottom: theme.spacing(1, "auto"),
+      marginTop: theme.spacing(1, "auto"),
+    },
+    button: {
+      width: "100%",
+    },
+  }));
   const classes = useStyles();
 
-  const [movies, setMovies] = useState([]);
+  // States
+  const [allMovies, setAllMovies] = useState([]);
   const [genres, setGenres] = useState([]);
   const [artists, setArtists] = useState([]);
+  const [filter, setFilter] = useState(null);
+  const [values, setValues] = useState({
+    movieName: "",
+    genre: [],
+    artist: [],
+    from: "",
+    to: "",
+  });
 
   useEffect(() => {
-    axios
-      .get("http://localhost:8085/api/v1/movies")
-      .then((response) => setMovies(response.data.movies));
+    const getData = async () => {
+      try {
+        // Get movie data
+        let response = await fetch(
+          "http://localhost:8085/api/v1/movies?page=1&limit=100000"
+        );
+        let result = await response.json();
+        setAllMovies(result.movies);
 
-    axios
-      .get("http://localhost:8085/api/v1/genres")
-      .then((response) => setGenres(response.data.genres));
+        // Get genres data
+        response = await fetch("http://localhost:8085/api/v1/genres");
+        result = await response.json();
+        setGenres(result.genres.map((element) => element.description));
 
-    axios
-      .get("http://localhost:8085/api/v1/artists")
-      .then((response) => setArtists(response.data.artists));
+        // Get Artists data
+        response = await fetch("http://localhost:8085/api/v1/artists");
+        result = await response.json();
+        setArtists(
+          result.artists.map(
+            (element) => element.first_name + " " + element.last_name
+          )
+        );
+      } catch (_) {}
+    };
+
+    getData();
   }, []);
 
   return (
@@ -49,7 +90,7 @@ const Home = () => {
       {/* Scrollable Images */}
       <div className="scrollable-images">
         <ImageList className={classes.grid} cols={6} rowHeight={250}>
-          {movies.map((tile) => (
+          {allMovies.map((tile) => (
             <ImageListItem key={tile.id}>
               <img src={tile.poster_url} alt={tile.title} />
               <ImageListItemBar
@@ -65,7 +106,7 @@ const Home = () => {
       <div className="second">
         {/* Movies images and links */}
         <div className="released">
-          <ReleasedMovies movies={movies} />
+          <ReleasedMovies movies={allMovies} />
         </div>
 
         {/* Filter tab */}
