@@ -1,19 +1,47 @@
-.second {
-    display: flex;
-    margin: 16px;
+.upcoming-movies-heading {
+  text-align: center;
+  background-color: #ff9999;
+  padding: 8px;
+  font-size: 1rem;
+}
+
+.movie-poster {
+  height: 100%;
+  width: auto;
+}
+
+.flex-container {
+  display: flex;
+}
+
+.flex-container > div {
+  margin: 16px;
+}
+
+.left-half-homepage {
+  width: 76%;
+}
+
+.right-half-homepage {
+  padding-top: 20px;
+  width: 24%;
+}
+
+.released-movie-grid-item {
+  margin: 15px;
+}
+
+@media (max-width: 992px) {
+  .flex-container {
+    flex-direction: column;
   }
-  
-  .released {
-    width: 76%;
+  .left-half-homepage {
+    width: 100%;
   }
-  
-  .filter {
-    width: 24%;
+  .right-half-homepage {
+    width: 90%;
   }
-  
-  .card-component {
-    flex-wrap: wrap;
-    flex: 0 1 24%;
-    margin: 16px;
-    padding-top: 15px;
+  .released-movie-grid-item {
+    margin: 8px;
   }
+}

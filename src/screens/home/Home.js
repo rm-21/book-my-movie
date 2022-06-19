@@ -1,139 +1,298 @@
-import React, { useState, useEffect, Fragment } from "react";
+import React, { Fragment, useState, useEffect } from "react";
 import Header from "../../common/header/Header";
-import Heading from "../../common/heading/Heading";
+import "./Home.css";
+import { withStyles } from "@material-ui/core/styles";
 import ImageList from "@material-ui/core/ImageList";
 import ImageListItem from "@material-ui/core/ImageListItem";
 import ImageListItemBar from "@material-ui/core/ImageListItemBar";
-import IconButton from "@material-ui/core/IconButton";
-import { makeStyles } from "@material-ui/core/styles";
-import ReleasedMovies from "./ReleasedMovies";
-import FilterCard from "./FilterCard";
-import "./Home.css";
+import Card from "@material-ui/core/Card";
+import CardContent from "@material-ui/core/CardContent";
+import FormControl from "@material-ui/core/FormControl";
+import Typography from "@material-ui/core/Typography";
+import InputLabel from "@material-ui/core/InputLabel";
+import Input from "@material-ui/core/Input";
+import Select from "@material-ui/core/Select";
+import MenuItem from "@material-ui/core/MenuItem";
+import Checkbox from "@material-ui/core/Checkbox";
+import ListItemText from "@material-ui/core/ListItemText";
+import TextField from "@material-ui/core/TextField";
+import Button from "@material-ui/core/Button";
 
-const Home = () => {
-  // Styles
-  const useStyles = makeStyles((theme) => ({
-    grid: {
-      flexWrap: "nowrap",
-      transform: "translateZ(0)",
-    },
-    root: {
-      float: "right",
-      margin: theme.spacing(1, "auto"),
-      minWidth: 240,
-      maxWidth: 240,
-    },
-    title: {
-      color: theme.palette.primary.light,
-    },
-    withMargin: {
-      marginBottom: theme.spacing(1, "auto"),
-      marginTop: theme.spacing(1, "auto"),
-    },
-    button: {
-      width: "100%",
-    },
-  }));
-  const classes = useStyles();
+const styles = (theme) => ({
+  root: {
+    flexGrow: 1,
+    backgroundColor: theme.palette.background.paper,
+  },
+  upcomingMoviesGrid: {
+    flexWrap: "nowrap",
+    width: "100%",
+    transform: "translateZ(0)",
+  },
+  releasedMoviesGrid: {
+    transform: "translateZ(0)",
+    cursor: "pointer",
+  },
+  formControl: {
+    margin: theme.spacing(1),
+    minWidth: 240,
+    maxWidth: 240,
+  },
+  title: {
+    color: theme.palette.primary.light,
+  },
+});
 
-  // States
-  const [allMovies, setAllMovies] = useState([]);
-  const [genres, setGenres] = useState([]);
-  const [artists, setArtists] = useState([]);
+const Home = (props) => {
+  const [UpcomingMovies, setUpcomingMovies] = useState([]);
+  const [ReleasedMovies, setReleasedMovies] = useState([]);
+  const [MovieName, setMovieName] = useState("");
+  const [GenreList, setGenreList] = useState([]);
+  const [ArtistList, setArtistList] = useState([]);
+  const [SelectedGenres, setSelectedGenres] = useState([]);
+  const [SelectedArtists, setSelectedArtists] = useState([]);
+  const [StartReleasedDate, setStartReleasedDate] = useState("");
+  const [EndReleasedDate, setEndReleasedDate] = useState("");
+  const { classes } = props;
 
-  // Get Data
   useEffect(() => {
-    const getData = async () => {
-      try {
-        // Get movie data
-        let response = await fetch(
-          "http://localhost:8085/api/v1/movies?page=1&limit=100000"
-        );
-        let result = await response.json();
-        setAllMovies(result.movies);
+    //Fetch upcoming movies
+    fetch(props.baseUrl + "movies?status=PUBLISHED", {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        "Cache-Control": "no-cache",
+      },
+    })
+      .then((response) => response.json())
+      .then((response) => setUpcomingMovies(response.movies));
 
-        // Get genres data
-        response = await fetch("http://localhost:8085/api/v1/genres");
-        result = await response.json();
-        setGenres(result.genres.map((element) => element.description));
+    //Fetch released movies
+    fetch(props.baseUrl + "movies?status=RELEASED", {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        "Cache-Control": "no-cache",
+      },
+    })
+      .then((response) => response.json())
+      .then((response) => setReleasedMovies(response.movies));
 
-        // Get Artists data
-        response = await fetch("http://localhost:8085/api/v1/artists");
-        result = await response.json();
-        setArtists(
-          result.artists.map(
-            (element) => element.first_name + " " + element.last_name
-          )
-        );
-      } catch (err) {
-        console.log(err);
-      }
-    };
+    //Fetch genres
+    fetch(props.baseUrl + "genres", {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        "Cache-Control": "no-cache",
+      },
+    })
+      .then((response) => response.json())
+      .then((response) => setGenreList(response.genres));
 
-    getData();
+    //Fetch artists
+    fetch(props.baseUrl + "artists", {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        "Cache-Control": "no-cache",
+      },
+    })
+      .then((response) => response.json())
+      .then((response) => setArtistList(response.artists));
   }, []);
 
-  // All the Released Movies
-  const releasedMoviesAll = allMovies.filter(
-    (movie) => movie.status === "RELEASED"
-  );
+  const applyFilterHandler = () => {
+    let initialQueryString = "?status=RELEASED";
 
-  // State of released movies to reflect filters
-  const [releasedMovies, setReleasedMovies] = useState([]);
+    if (MovieName !== "") {
+      initialQueryString += "&title=" + MovieName;
+    }
+    if (SelectedGenres.length > 0) {
+      initialQueryString += "&genres=" + SelectedGenres.toString();
+    }
+    if (SelectedArtists.length > 0) {
+      initialQueryString += "&artists=" + SelectedArtists.toString();
+    }
+    if (StartReleasedDate !== "") {
+      initialQueryString += "&start_date=" + StartReleasedDate;
+    }
+    if (EndReleasedDate !== "") {
+      initialQueryString += "&end_date=" + EndReleasedDate;
+    }
 
-  useEffect(() => {
-    return setReleasedMovies(() => releasedMoviesAll);
-  }, [JSON.stringify(releasedMoviesAll)]);
-
-  console.log("allMovies", allMovies);
-  console.log("genres", genres);
-  console.log("artists", artists);
+    fetch(props.baseUrl + "movies" + encodeURI(initialQueryString), {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        "Cache-Control": "no-cache",
+      },
+    })
+      .then((response) => response.json())
+      .then((response) => {
+        setReleasedMovies(response.movies);
+      });
+  };
 
   return (
     <Fragment>
-      {/* Header */}
-      <Header bookShow={false} />
-
-      {/* Heading upcoming movies */}
-      <Heading />
-
-      {/* Scrollable Images */}
-      <div className="scrollable-images">
-        <ImageList className={classes.grid} cols={6} rowHeight={350}>
-          {allMovies.map((tile) => (
-            <ImageListItem key={tile.id}>
-              <img src={tile.poster_url} alt={tile.title} />
-              <ImageListItemBar
-                title={tile.title}
-                actionIcon={<IconButton aria-label={`star ${tile.title}`} />}
-              />
-            </ImageListItem>
-          ))}
-        </ImageList>
+      <Header baseUrl={props.baseUrl} />
+      <div className="upcoming-movies-heading">
+        <span>Upcoming Movies</span>
       </div>
-
-      {/* Released movies */}
-      <div className="second">
-        {/* Movies images and links */}
-        <div className="released">
-          <ReleasedMovies movies={releasedMovies} />
-        </div>
-
-        {/* Filter tab */}
-        <div className="filter">
-          <div className="card-component">
-            <FilterCard
-              genres={genres}
-              artists={artists}
-              releasedMoviesAll={releasedMoviesAll}
-              setReleasedMovies={setReleasedMovies}
-              classes={classes}
+      <ImageList
+        className={classes.upcomingMoviesGrid}
+        rowHeight={250}
+        cols={6}
+      >
+        {UpcomingMovies.map((movie) => (
+          <ImageListItem key={"um" + movie.id}>
+            <img
+              src={movie.poster_url}
+              className="movie-poster"
+              alt={movie.title}
             />
-          </div>
+            <ImageListItemBar title={movie.title} />
+          </ImageListItem>
+        ))}
+      </ImageList>
+      <div className="flex-container">
+        <div className="left-half-homepage">
+          <ImageList
+            className={classes.releasedMoviesGrid}
+            rowHeight={350}
+            cols={4}
+          >
+            {ReleasedMovies.map((movie) => (
+              <ImageListItem
+                onClick={() => props.history.push("/movie/" + movie.id)}
+                className="released-movie-grid-item"
+                key={"grid" + movie.id}
+              >
+                <img
+                  src={movie.poster_url}
+                  className="movie-poster"
+                  alt={movie.title}
+                />
+                <ImageListItemBar
+                  title={movie.title}
+                  subtitle={
+                    <span>
+                      Release Date:{" "}
+                      {new Date(movie.release_date).toDateString()}
+                    </span>
+                  }
+                />
+              </ImageListItem>
+            ))}
+          </ImageList>
+        </div>
+        <div className="right-half-homepage">
+          <Card>
+            <CardContent>
+              <FormControl className={classes.formControl}>
+                <Typography className={classes.title} color="textSecondary">
+                  FIND MOVIES BY:
+                </Typography>
+              </FormControl>
+
+              <FormControl className={classes.formControl}>
+                <InputLabel htmlFor="movieName">Movie Name</InputLabel>
+                <Input
+                  id="movieName"
+                  onChange={(e) => setMovieName(e.target.value)}
+                />
+              </FormControl>
+
+              <FormControl className={classes.formControl}>
+                <InputLabel htmlFor="select-multiple-checkbox">
+                  Genres
+                </InputLabel>
+                <Select
+                  multiple
+                  input={<Input id="select-multiple-checkbox-genre" />}
+                  renderValue={(selected) => selected.join(",")}
+                  value={SelectedGenres}
+                  onChange={(e) => setSelectedGenres(e.target.value)}
+                >
+                  {GenreList.map((genre) => (
+                    <MenuItem key={genre.id} value={genre.genre}>
+                      <Checkbox
+                        checked={SelectedGenres.indexOf(genre.genre) > -1}
+                      />
+                      <ListItemText primary={genre.genre} />
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+
+              <FormControl className={classes.formControl}>
+                <InputLabel htmlFor="select-multiple-checkbox">
+                  Artists
+                </InputLabel>
+                <Select
+                  multiple
+                  input={<Input id="select-multiple-checkbox" />}
+                  renderValue={(selected) => selected.join(",")}
+                  value={SelectedArtists}
+                  onChange={(e) => setSelectedArtists(e.target.value)}
+                >
+                  {ArtistList.map((artist) => (
+                    <MenuItem
+                      key={artist.id}
+                      value={artist.first_name + " " + artist.last_name}
+                    >
+                      <Checkbox
+                        checked={
+                          SelectedArtists.indexOf(
+                            artist.first_name + " " + artist.last_name
+                          ) > -1
+                        }
+                      />
+                      <ListItemText
+                        primary={artist.first_name + " " + artist.last_name}
+                      />
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+
+              <FormControl className={classes.formControl}>
+                <TextField
+                  id="releaseDateStart"
+                  label="Release Date Start"
+                  type="date"
+                  defaultValue=""
+                  InputLabelProps={{ shrink: true }}
+                  onChange={(e) => setStartReleasedDate(e.target.value)}
+                />
+              </FormControl>
+
+              <FormControl className={classes.formControl}>
+                <TextField
+                  id="releaseDateEnd"
+                  label="Release Date End"
+                  type="date"
+                  defaultValue=""
+                  InputLabelProps={{ shrink: true }}
+                  onChange={(e) => setEndReleasedDate(e.target.value)}
+                />
+              </FormControl>
+              <br />
+              <br />
+              <FormControl className={classes.formControl}>
+                <Button
+                  onClick={() => applyFilterHandler()}
+                  variant="contained"
+                  color="primary"
+                >
+                  APPLY
+                </Button>
+              </FormControl>
+            </CardContent>
+          </Card>
         </div>
       </div>
     </Fragment>
   );
 };
 
-export default Home;
+export default withStyles(styles)(Home);

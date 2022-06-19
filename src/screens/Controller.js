@@ -6,7 +6,7 @@ import BookShow from "../screens/bookshow/BookShow";
 import Confirmation from "../screens/confirmation/Confirmation";
 
 const Controller = () => {
-  const baseUrl = "http://localhost:8085/api/v1/";
+  const baseUrl = "/api/v1/";
 
   return (
     <Router>
