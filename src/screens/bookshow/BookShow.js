@@ -285,7 +285,9 @@ const BookShow = (props) => {
             <br />
             <Typography>Unit Price: Rs. {unitPrice}</Typography>
             <br />
-            <Typography>Total Price: Rs. {unitPrice * tickets}</Typography>
+            <Typography>
+              Total Price: Rs. {unitPrice * tickets}
+            </Typography>
             <br />
             <br />
             <Button
