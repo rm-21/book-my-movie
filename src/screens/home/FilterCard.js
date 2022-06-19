@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import {
   Card,
   CardContent,
@@ -14,7 +14,13 @@ import {
   Typography,
 } from "@material-ui/core";
 
-export default function FilterCard(props) {
+export default function FilterCard({
+  genres,
+  artists,
+  releasedMoviesAll,
+  setReleasedMovies,
+  classes,
+}) {
   const ITEM_HEIGHT = 48;
   const ITEM_PADDING_TOP = 8;
   const MenuProps = {
@@ -26,40 +32,137 @@ export default function FilterCard(props) {
     },
   };
 
+  // Filter states
+  const [filter, setFilter] = useState(null);
+  const [values, setValues] = useState({
+    movieName: "",
+    genre: [],
+    artist: [],
+    from: "",
+    to: "",
+  });
+
+  // Artist filter
+  const artistFilter = (artists, movie) => {
+    const fullName = (first, last) => {
+      return (first + " " + last).toLowerCase();
+    };
+
+    let found = false;
+    artists.forEach((artist) => {
+      if (
+        movie.artists.find(
+          ((element) => fullName(element).includes(fullName(artist))) !==
+            undefined
+        )
+      ) {
+        found = true;
+      }
+    });
+    return found;
+  };
+
+  // Genre filter
+  const genreFilter = (genres, movie) => {
+    let found = false;
+    genres.forEach((genre) => {
+      if (
+        movie.genre.find((element) =>
+          element.toLowerCase().includes(genre.toLowerCase())
+        ) !== undefined
+      ) {
+        found = true;
+      }
+    });
+    return found;
+  };
+
+  // Date Filter
+  const dateFilter = (dateCheck, dateFrom, dateTo) => {
+    let date = new Date(dateCheck);
+
+    if (
+      dateFrom !== undefined &&
+      dateFrom !== null &&
+      dateFrom.toLowerCase().trim() !== ""
+    ) {
+      let from = new Date(dateFrom);
+      if (date < from) return false;
+    }
+
+    if (
+      dateTo !== undefined &&
+      dateTo !== null &&
+      dateTo.toLowerCase().trim() !== ""
+    ) {
+      let to = new Date(dateTo);
+      if (date > to) return false;
+    }
+
+    return true;
+  };
+
+  const releasedMovies =
+    filter === null
+      ? releasedMoviesAll
+      : releasedMoviesAll.filter(
+          (movie) =>
+            (filter.movieName === null ||
+              filter.movieName.trim() === "" ||
+              movie.title.toLowerCase().includes(filter.movieName)) &&
+            (filter.artist === null ||
+              filter.artist.length === 0 ||
+              artistFilter(filter.artist, movie)) &&
+            (filter.genre === null ||
+              filter.genre.length === 0 ||
+              genreFilter(filter.genre, movie)) &&
+            dateFilter(movie.release_date, filter.from, filter.to)
+        );
+
+  const onFilterCallback = () => {
+    setFilter(values);
+  };
+
+  const handleChange = (prop) => (event) => {
+    setValues({ ...values, [prop]: event.target.value });
+  };
+
+  //   setReleasedMovies(releasedMovies);
+
   return (
-    <Card className={props.classes.root}>
+    <Card className={classes.root}>
       <CardContent>
         {/* Heading */}
-        <Typography gutterBottom component="h3" className={props.classes.title}>
+        <Typography gutterBottom component="h3" className={classes.title}>
           FIND MOVIES BY:
         </Typography>
 
         {/* Movie Name Field */}
-        <FormControl fullWidth className={props.classes.withMargin}>
+        <FormControl fullWidth className={classes.withMargin}>
           <InputLabel htmlFor="movieName">Movie Name</InputLabel>
           <Input
             id="movieName"
-            value={props.values.movieName}
-            onChange={() => props.handleChange("movieName")}
+            value={values.movieName}
+            onChange={() => handleChange("movieName")}
           />
         </FormControl>
 
         {/* Genres Field */}
-        <FormControl fullWidth className={props.classes.withMargin}>
+        <FormControl fullWidth className={classes.withMargin}>
           <InputLabel htmlFor="genres-label">Genres</InputLabel>
           <Select
             labelId="genres-label"
             id="genres"
             multiple
-            value={props.values.genre}
-            onChange={() => props.handleChange("genre")}
+            value={values.genre}
+            onChange={() => handleChange("genre")}
             input={<Input />}
             renderValue={(selected) => selected.join(", ")}
             MenuProps={MenuProps}
           >
-            {props.genres.map((element, index) => (
+            {genres.map((element, index) => (
               <MenuItem value={element} key={index}>
-                <Checkbox checked={props.values.genre.indexOf(element) > -1} />
+                <Checkbox checked={values.genre.indexOf(element) > -1} />
                 <ListItemText primary={element} />
               </MenuItem>
             ))}
@@ -67,21 +170,21 @@ export default function FilterCard(props) {
         </FormControl>
 
         {/* Artists */}
-        <FormControl fullWidth className={props.classes.withMargin}>
+        <FormControl fullWidth className={classes.withMargin}>
           <InputLabel id="artist-label">Artists</InputLabel>
           <Select
             labelId="artist-label"
             id="artist"
             multiple
-            value={props.values.artist}
-            onChange={() => props.handleChange("artist")}
+            value={values.artist}
+            onChange={() => handleChange("artist")}
             input={<Input />}
             renderValue={(selected) => selected.join(", ")}
             MenuProps={MenuProps}
           >
-            {props.artists.map((element, index) => (
+            {artists.map((element, index) => (
               <MenuItem value={element} key={index}>
-                <Checkbox checked={props.values.artist.indexOf(element) > -1} />
+                <Checkbox checked={values.artist.indexOf(element) > -1} />
                 <ListItemText primary={element} />
               </MenuItem>
             ))}
@@ -89,7 +192,7 @@ export default function FilterCard(props) {
         </FormControl>
 
         {/* Release START */}
-        <FormControl fullWidth className={props.classes.withMargin}>
+        <FormControl fullWidth className={classes.withMargin}>
           <TextField
             id="startDate"
             label="Release Date Start"
@@ -98,12 +201,12 @@ export default function FilterCard(props) {
             InputLabelProps={{
               shrink: true,
             }}
-            onChange={() => props.handleChange("from")}
+            onChange={() => handleChange("from")}
           />
         </FormControl>
 
         {/* Release END */}
-        <FormControl fullWidth className={props.classes.withMargin}>
+        <FormControl fullWidth className={classes.withMargin}>
           <TextField
             id="endDate"
             label="Release Date End"
@@ -112,7 +215,7 @@ export default function FilterCard(props) {
             InputLabelProps={{
               shrink: true,
             }}
-            onChange={() => props.handleChange("to")}
+            onChange={() => handleChange("to")}
             format="DD-MM-YYYY"
           />
         </FormControl>
@@ -122,7 +225,7 @@ export default function FilterCard(props) {
           variant="contained"
           color="primary"
           disableElevation
-          onClick={() => props.onFilterCallback()}
+          onClick={() => onFilterCallback()}
         >
           APPLY
         </Button>

@@ -40,14 +40,6 @@ const Home = () => {
   const [allMovies, setAllMovies] = useState([]);
   const [genres, setGenres] = useState([]);
   const [artists, setArtists] = useState([]);
-  const [filter, setFilter] = useState(null);
-  const [values, setValues] = useState({
-    movieName: "",
-    genre: [],
-    artist: [],
-    from: "",
-    to: "",
-  });
 
   // Get Data
   useEffect(() => {
@@ -73,101 +65,29 @@ const Home = () => {
             (element) => element.first_name + " " + element.last_name
           )
         );
-      } catch (_) {}
+      } catch (err) {
+        console.log(err);
+      }
     };
 
     getData();
   }, []);
 
   // All the Released Movies
-  const releasedMoviesAll =
-    allMovies.filter((movie) => movie.status.toLowerCase() === "released") ||
-    [];
+  const releasedMoviesAll = allMovies.filter(
+    (movie) => movie.status === "RELEASED"
+  );
 
-  // Artist filter
-  const artistFilter = (artists, movie) => {
-    const fullName = (first, last) => {
-      return (first + " " + last).toLowerCase();
-    };
+  // State of released movies to reflect filters
+  const [releasedMovies, setReleasedMovies] = useState([]);
 
-    let found = false;
-    artists.forEach((artist) => {
-      if (
-        movie.artists.find(
-          ((element) => fullName(element).includes(fullName(artist))) !==
-            undefined
-        )
-      ) {
-        found = true;
-      }
-    });
-    return found;
-  };
+  useEffect(() => {
+    return setReleasedMovies(() => releasedMoviesAll);
+  }, [JSON.stringify(releasedMoviesAll)]);
 
-  // Genre filter
-  const genreFilter = (genres, movie) => {
-    let found = false;
-    genres.forEach((genre) => {
-      if (
-        movie.genre.find((element) =>
-          element.toLowerCase().includes(genre.toLowerCase())
-        ) !== undefined
-      ) {
-        found = true;
-      }
-    });
-    return found;
-  };
-
-  // Date Filter
-  const dateFilter = (dateCheck, dateFrom, dateTo) => {
-    let date = new Date(dateCheck);
-
-    if (
-      dateFrom !== undefined &&
-      dateFrom !== null &&
-      dateFrom.toLowerCase().trim() !== ""
-    ) {
-      let from = new Date(dateFrom);
-      if (date < from) return false;
-    }
-
-    if (
-      dateTo !== undefined &&
-      dateTo !== null &&
-      dateTo.toLowerCase().trim() !== ""
-    ) {
-      let to = new Date(dateTo);
-      if (date > to) return false;
-    }
-
-    return true;
-  };
-
-  const releasedMovies =
-    filter === null
-      ? releasedMoviesAll
-      : releasedMoviesAll.filter(
-          (movie) =>
-            (filter.movieName === null ||
-              filter.movieName.trim() === "" ||
-              movie.title.toLowerCase().includes(filter.movieName)) &&
-            (filter.artist === null ||
-              filter.artist.length === 0 ||
-              artistFilter(filter.artist, movie)) &&
-            (filter.genre === null ||
-              filter.genre.length === 0 ||
-              genreFilter(filter.genre, movie)) &&
-            dateFilter(movie.release_date, filter.from, filter.to)
-        );
-
-  const onFilterCallback = () => {
-    setFilter(values);
-  };
-
-  const handleChange = (prop) => (event) => {
-    setValues({ ...values, [prop]: event.target.value });
-  };
+  console.log("allMovies", allMovies);
+  console.log("genres", genres);
+  console.log("artists", artists);
 
   return (
     <Fragment>
@@ -205,10 +125,9 @@ const Home = () => {
             <FilterCard
               genres={genres}
               artists={artists}
+              releasedMoviesAll={releasedMoviesAll}
+              setReleasedMovies={setReleasedMovies}
               classes={classes}
-              handleChange={handleChange}
-              values={values}
-              onFilterCallback={onFilterCallback}
             />
           </div>
         </div>
