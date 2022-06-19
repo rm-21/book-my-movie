@@ -7,6 +7,7 @@ import ImageListItemBar from "@material-ui/core/ImageListItemBar";
 import IconButton from "@material-ui/core/IconButton";
 import axios from "axios";
 import { makeStyles } from "@material-ui/styles";
+import ReleasedMovies from "./ReleasedMovies";
 
 const useStyles = makeStyles({
   grid: {
@@ -45,17 +46,28 @@ const Home = () => {
       <Heading />
 
       {/* Scrollable Images */}
-      <ImageList className={classes.grid} cols={6} rowHeight={250}>
-        {movies.map((tile) => (
-          <ImageListItem key={tile.id}>
-            <img src={tile.poster_url} alt={tile.title} />
-            <ImageListItemBar
-              title={tile.title}
-              actionIcon={<IconButton aria-label={`star ${tile.title}`} />}
-            />
-          </ImageListItem>
-        ))}
-      </ImageList>
+      <div className="scrollable-images">
+        <ImageList className={classes.grid} cols={6} rowHeight={250}>
+          {movies.map((tile) => (
+            <ImageListItem key={tile.id}>
+              <img src={tile.poster_url} alt={tile.title} />
+              <ImageListItemBar
+                title={tile.title}
+                actionIcon={<IconButton aria-label={`star ${tile.title}`} />}
+              />
+            </ImageListItem>
+          ))}
+        </ImageList>
+      </div>
+
+      {/* Released movies */}
+      <div className="second">
+        <div className="released">
+          <ReleasedMovies movies={movies} />
+        </div>
+
+        <div className="filter"></div>
+      </div>
     </Fragment>
   );
 };
