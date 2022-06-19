@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React from "react";
 import {
   Card,
   CardContent,
@@ -10,152 +10,122 @@ import {
   Input,
   Checkbox,
   Button,
-  createTheme,
   ListItemText,
   Typography,
 } from "@material-ui/core";
 
-const theme = createTheme();
-
 export default function FilterCard(props) {
-  const [movieName, setMovieName] = useState("");
-  const handleMovieName = (event) => {
-    setMovieName(event.target.value);
-  };
-
-  const [findArtists, setFindArtists] = useState([]);
-  const handleFindArtists = (event) => {
-    const {
-      target: { value },
-    } = event;
-    setFindArtists(typeof value === "string" ? value.split(",") : value);
-  };
-
-  const [findGenres, setFindGenres] = useState([]);
-  const handleFindGenres = (event) => {
-    const {
-      target: { value },
-    } = event;
-    setFindGenres(typeof value === "string" ? value.split(",") : value);
-  };
-
-  const [releaseStart, setReleaseStart] = useState("null");
-  const onStartDateChange = (event) => {
-    setReleaseStart(event.target.value);
-  };
-
-  const [releaseEnd, setReleaseEnd] = useState("null");
-  const onEndDateChange = (event) => {
-    setReleaseEnd(event.target.value);
+  const ITEM_HEIGHT = 48;
+  const ITEM_PADDING_TOP = 8;
+  const MenuProps = {
+    PaperProps: {
+      style: {
+        maxHeight: ITEM_HEIGHT * 11.5 + ITEM_PADDING_TOP,
+        width: 250,
+      },
+    },
   };
 
   return (
-    <Card>
+    <Card className={props.classes.root}>
       <CardContent>
         {/* Heading */}
-        <InputLabel style={{ color: theme.palette.primary.light }}>
+        <Typography gutterBottom component="h3" className={props.classes.title}>
           FIND MOVIES BY:
-        </InputLabel>
+        </Typography>
 
         {/* Movie Name Field */}
-        <FormControl
-          variant="standard"
-          style={{ width: "100%", margin: theme.spacing(1, "auto") }}
-        >
-          <InputLabel htmlFor="component-simple">Movie Name</InputLabel>
+        <FormControl fullWidth className={props.classes.withMargin}>
+          <InputLabel htmlFor="movieName">Movie Name</InputLabel>
           <Input
-            id="component-simple"
-            value={movieName}
-            onChange={handleMovieName}
+            id="movieName"
+            value={props.values.movieName}
+            onChange={() => props.handleChange("movieName")}
           />
         </FormControl>
 
         {/* Genres Field */}
-        <FormControl
-          variant="standard"
-          style={{ width: "100%", margin: theme.spacing(1, "auto") }}
-        >
-          <InputLabel htmlFor="component-simple">Genres</InputLabel>
+        <FormControl fullWidth className={props.classes.withMargin}>
+          <InputLabel htmlFor="genres-label">Genres</InputLabel>
           <Select
-            labelId="demo-mutiple-name-label"
-            id="demo-mutiple-name"
+            labelId="genres-label"
+            id="genres"
             multiple
-            value={findGenres}
-            onChange={handleFindGenres}
-            input={<Input label="Genres" />}
+            value={props.values.genre}
+            onChange={() => props.handleChange("genre")}
+            input={<Input />}
+            renderValue={(selected) => selected.join(", ")}
+            MenuProps={MenuProps}
           >
-            {props.genres.map((genre) => (
-              <MenuItem key={genre.id} value={genre.genre}>
-                <Checkbox color="primary" />
-                {genre.genre}
+            {props.genres.map((element, index) => (
+              <MenuItem value={element} key={index}>
+                <Checkbox checked={props.values.genre.indexOf(element) > -1} />
+                <ListItemText primary={element} />
               </MenuItem>
             ))}
           </Select>
         </FormControl>
 
         {/* Artists */}
-        <FormControl
-          style={{ width: "100%", margin: theme.spacing(1, "auto") }}
-        >
-          <InputLabel id="demo-mutiple-name-label">Artists</InputLabel>
+        <FormControl fullWidth className={props.classes.withMargin}>
+          <InputLabel id="artist-label">Artists</InputLabel>
           <Select
-            labelId="demo-mutiple-name-label"
-            id="demo-mutiple-name"
+            labelId="artist-label"
+            id="artist"
             multiple
-            value={findArtists}
-            onChange={handleFindArtists}
+            value={props.values.artist}
+            onChange={() => props.handleChange("artist")}
             input={<Input />}
+            renderValue={(selected) => selected.join(", ")}
+            MenuProps={MenuProps}
           >
-            {props.artists.map((artist) => (
-              <MenuItem
-                key={artist.id}
-                value={artist.first_name + " " + artist.last_name}
-              >
-                <Checkbox color="primary" />
-                {artist.first_name + " " + artist.last_name}
+            {props.artists.map((element, index) => (
+              <MenuItem value={element} key={index}>
+                <Checkbox checked={props.values.artist.indexOf(element) > -1} />
+                <ListItemText primary={element} />
               </MenuItem>
             ))}
           </Select>
         </FormControl>
 
         {/* Release START */}
-        <FormControl
-          style={{ width: "100%", margin: theme.spacing(1, "auto") }}
-        >
+        <FormControl fullWidth className={props.classes.withMargin}>
           <TextField
-            name="Release Date Start"
-            id="standard-basic"
-            type="date"
+            id="startDate"
             label="Release Date Start"
-            value={releaseStart}
-            onChange={onStartDateChange}
-            InputLabelProps={{ shrink: true }}
+            type="date"
+            defaultValue=""
+            InputLabelProps={{
+              shrink: true,
+            }}
+            onChange={() => props.handleChange("from")}
           />
         </FormControl>
 
         {/* Release END */}
-        <FormControl
-          style={{ width: "100%", margin: theme.spacing(1, "auto") }}
-        >
+        <FormControl fullWidth className={props.classes.withMargin}>
           <TextField
-            name="Release Date End"
-            id="standard-basic"
-            type="date"
+            id="endDate"
             label="Release Date End"
-            value={releaseEnd}
-            onChange={onEndDateChange}
-            InputLabelProps={{ shrink: true }}
+            type="date"
+            defaultValue=""
+            InputLabelProps={{
+              shrink: true,
+            }}
+            onChange={() => props.handleChange("to")}
+            format="DD-MM-YYYY"
           />
         </FormControl>
 
         {/* Apply button */}
-        <FormControl
-          style={{ width: "100%", margin: theme.spacing(1, "auto") }}
+        <Button
+          variant="contained"
+          color="primary"
+          disableElevation
+          onClick={() => props.onFilterCallback()}
         >
-          <Button variant="contained" name="Apply" color="primary">
-            Apply
-          </Button>
-        </FormControl>
+          APPLY
+        </Button>
       </CardContent>
     </Card>
   );

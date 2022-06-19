@@ -5,7 +5,6 @@ import ImageList from "@material-ui/core/ImageList";
 import ImageListItem from "@material-ui/core/ImageListItem";
 import ImageListItemBar from "@material-ui/core/ImageListItemBar";
 import IconButton from "@material-ui/core/IconButton";
-import axios from "axios";
 import { makeStyles } from "@material-ui/core/styles";
 import ReleasedMovies from "./ReleasedMovies";
 import FilterCard from "./FilterCard";
@@ -50,6 +49,7 @@ const Home = () => {
     to: "",
   });
 
+  // Get Data
   useEffect(() => {
     const getData = async () => {
       try {
@@ -79,6 +79,96 @@ const Home = () => {
     getData();
   }, []);
 
+  // All the Released Movies
+  const releasedMoviesAll =
+    allMovies.filter((movie) => movie.status.toLowerCase() === "released") ||
+    [];
+
+  // Artist filter
+  const artistFilter = (artists, movie) => {
+    const fullName = (first, last) => {
+      return (first + " " + last).toLowerCase();
+    };
+
+    let found = false;
+    artists.forEach((artist) => {
+      if (
+        movie.artists.find(
+          ((element) => fullName(element).includes(fullName(artist))) !==
+            undefined
+        )
+      ) {
+        found = true;
+      }
+    });
+    return found;
+  };
+
+  // Genre filter
+  const genreFilter = (genres, movie) => {
+    let found = false;
+    genres.forEach((genre) => {
+      if (
+        movie.genre.find((element) =>
+          element.toLowerCase().includes(genre.toLowerCase())
+        ) !== undefined
+      ) {
+        found = true;
+      }
+    });
+    return found;
+  };
+
+  // Date Filter
+  const dateFilter = (dateCheck, dateFrom, dateTo) => {
+    let date = new Date(dateCheck);
+
+    if (
+      dateFrom !== undefined &&
+      dateFrom !== null &&
+      dateFrom.toLowerCase().trim() !== ""
+    ) {
+      let from = new Date(dateFrom);
+      if (date < from) return false;
+    }
+
+    if (
+      dateTo !== undefined &&
+      dateTo !== null &&
+      dateTo.toLowerCase().trim() !== ""
+    ) {
+      let to = new Date(dateTo);
+      if (date > to) return false;
+    }
+
+    return true;
+  };
+
+  const releasedMovies =
+    filter === null
+      ? releasedMoviesAll
+      : releasedMoviesAll.filter(
+          (movie) =>
+            (filter.movieName === null ||
+              filter.movieName.trim() === "" ||
+              movie.title.toLowerCase().includes(filter.movieName)) &&
+            (filter.artist === null ||
+              filter.artist.length === 0 ||
+              artistFilter(filter.artist, movie)) &&
+            (filter.genre === null ||
+              filter.genre.length === 0 ||
+              genreFilter(filter.genre, movie)) &&
+            dateFilter(movie.release_date, filter.from, filter.to)
+        );
+
+  const onFilterCallback = () => {
+    setFilter(values);
+  };
+
+  const handleChange = (prop) => (event) => {
+    setValues({ ...values, [prop]: event.target.value });
+  };
+
   return (
     <Fragment>
       {/* Header */}
@@ -89,7 +179,7 @@ const Home = () => {
 
       {/* Scrollable Images */}
       <div className="scrollable-images">
-        <ImageList className={classes.grid} cols={6} rowHeight={250}>
+        <ImageList className={classes.grid} cols={6} rowHeight={350}>
           {allMovies.map((tile) => (
             <ImageListItem key={tile.id}>
               <img src={tile.poster_url} alt={tile.title} />
@@ -106,13 +196,20 @@ const Home = () => {
       <div className="second">
         {/* Movies images and links */}
         <div className="released">
-          <ReleasedMovies movies={allMovies} />
+          <ReleasedMovies movies={releasedMovies} />
         </div>
 
         {/* Filter tab */}
         <div className="filter">
           <div className="card-component">
-            <FilterCard genres={genres} artists={artists} />
+            <FilterCard
+              genres={genres}
+              artists={artists}
+              classes={classes}
+              handleChange={handleChange}
+              values={values}
+              onFilterCallback={onFilterCallback}
+            />
           </div>
         </div>
       </div>
